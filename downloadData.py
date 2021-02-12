@@ -24,11 +24,15 @@ def grabTickers(filename):
 #-----------------
 def parse_file(tickersymb):
     file = open(address_txt, "r")
-    node_dict = {}
+    accessdate = []
+    nearterm = []
+    longerm = []
     for line in file:
-        name, ssh = lin.split(' | ')
-        node_dict[name] = ssh.rstrip()
-    return node_dict
+        access, near, long = lin.split(' | ')
+        accessdate.append(access)
+        nearterm.append(near)
+        longterm.append(long)
+    return accessdate, nearterm, longerm
 
 tickersymbs = grabTickers('tickersymbs.txt')
 
