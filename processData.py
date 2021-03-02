@@ -69,13 +69,3 @@ def grabData(nearTermPath,nextTermPath):
     next_term_put_mid = df_next_put.loc[:,'Midpoint'].values
 
     return near_term_call_strike,next_term_call_strike, near_term_put_strike, next_term_put_strike,near_term_call_mid,next_term_call_mid,near_term_put_mid,next_term_put_mid
-
-
-tickers = grabTickers('tickersymbs.txt')
-
-#Return the access dates and nearterm, and nextterm call expry dates
-accessdate, nearterm, nextterm = parse_file('Dates.txt')
-
-#TESTING
-near, next = grabDataPaths(tickers[0],accessdate[0],nearterm[0],nextterm[0])
-near_term_call_strike,next_term_call_strike, near_term_put_strike, next_term_put_strike,near_term_call_mid,next_term_call_mid,near_term_put_mid,next_term_put_mid = grabData(near,next)
