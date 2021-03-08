@@ -1,0 +1,14 @@
+#!/bin/bash
+# Bash Script to Run the VIX Calculations
+
+declare -i sectors=9
+declare -i files=14
+
+for i in {0..9}
+do
+	echo "Sector $i"
+	for k in {0..14}
+	do
+		python3 VIX\ Calculations.py $i $k
+	done
+done
