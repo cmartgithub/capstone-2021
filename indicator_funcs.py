@@ -87,7 +87,7 @@ def ttm(df):
     df['lower_keltner'] = df['20sma'] - (df['ATR'] * 1.5)
     df['upper_keltner'] = df['20sma'] + (df['ATR'] * 1.5)
 
-    df['squeeze_on'] = df.apply(in_squeeze, axis=1)
+    df['ttm_indicator'] = df.apply(in_squeeze, axis=1)
     return df
 
 #ADX
@@ -107,3 +107,18 @@ def adx_indicator(data):
     data['trend_signal'] = np.where(data['adx']>25,1,0)
     data['adx_indicator'] = np.where((data['adx']>=25) & (data['di_pos'] >= data['di_neg']),1,0)
     return data
+
+#returns ddiscrete derivative
+def dx(vector):
+    temp = np.zeros(len(vector))
+    for i in range(1,len(vector)):
+        temp[i] = vector[i]-vector[i-1]
+    return temp
+
+#inputs: - yfinance dataframe
+#        - vector of weights for indicators: [rsi adx ttm macd vix]
+def buysell(data,weights):
+    sum = np.zeros(len(data))
+    for i in range(0,len(data)):
+        sum[i] = weights[0]*data.iloc[i,9] + weights[1]*data.iloc[i,28] + weights[2]*data.iloc[i,18] + weights[3]*data.iloc[i,7] + weights[4]*data.iloc[i,30]
+    return sum
