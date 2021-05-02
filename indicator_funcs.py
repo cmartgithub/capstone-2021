@@ -121,4 +121,54 @@ def buysell(data,weights):
     sum = np.zeros(len(data))
     for i in range(0,len(data)):
         sum[i] = weights[0]*data.iloc[i,9] + weights[1]*data.iloc[i,28] + weights[2]*data.iloc[i,18] + weights[3]*data.iloc[i,7] + weights[4]*data.iloc[i,30]
+    data['overall_indicator'] = sum
     return sum
+
+def backtesting(data,weights,start_balance):
+    start_index = data.index.get_loc('2021-02-08')
+    vix_index = data.columns.get_loc('vix_indicator')
+    cash_value = np.zeros(len(data))
+    stock_shares = np.zeros(len(data))
+    stock_value = np.zeros(len(data))
+    total_value = np.zeros(len(data))
+    cash_value[0:start_index] = np.ones(start_index)*start_balance
+    total_value[0:start_index] = np.ones(start_index)*start_balance
+    indicator = buysell(data,weights)
+    returns = np.zeros(len(data))
+    indicator_idx = data.columns.get_loc('overall_indicator')
+    close_idx = data.columns.get_loc('Close')
+
+    for i in range(start_index,len(data)):
+        if (data.iloc[i,indicator_idx] >= 2) and (cash_value[i-1] > 0) and (data.iloc[i,vix_index]>0):
+            print('triggered buy')
+            stock_shares[i] = cash_value[i-1]/data.iloc[i,close_idx]
+            stock_value[i] = stock_shares[i]*data.iloc[i,close_idx]
+            cash_value[i] = 0
+            total_value[i] = cash_value[i] + stock_value[i]
+            returns[i] = (total_value[i] - start_balance)/start_balance
+            print('cash: ',cash_value[i])
+            print('stock: ',stock_value[i])
+
+        elif (data.iloc[i,indicator_idx] == 0) and (stock_value[i-1] > 0):
+            print('triggered sell')
+            cash_value[i] = stock_shares[i-1] * data.iloc[i,close_idx] + cash_value[i-1]
+            stock_shares[i] = 0
+            stock_value[i] = stock_shares[i]*data.iloc[i,close_idx]
+            total_value[i] = cash_value[i] + stock_value[i]
+            returns[i] = (total_value[i] - start_balance)/start_balance
+            print('cash: ',cash_value[i])
+            print('stock: ',stock_value[i])
+        else:
+            print('triggered hold')
+            stock_shares[i] = stock_shares[i-1]
+            cash_value[i] = cash_value[i-1]
+            stock_value[i] = stock_shares[i]*data.iloc[i,close_idx]
+            total_value[i] = cash_value[i] + stock_value[i]
+            returns[i] = (total_value[i] - start_balance)/start_balance
+            print('cash: ',cash_value[i])
+            print('stock: ',stock_value[i])
+
+    data['cash_balance'] = cash_value
+    data['shares'] = stock_shares
+    data['total_balance'] = total_value
+    data['returns'] = returns
