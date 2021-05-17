@@ -137,10 +137,11 @@ def backtesting(data,weights,start_balance,buy,sell):
     returns = np.zeros(len(data))
     indicator_idx = data.columns.get_loc('overall_indicator')
     close_idx = data.columns.get_loc('Close')
+    buy_sell = np.zeros(len(data))
 
     for i in range(start_index,len(data)):
         if (data.iloc[i,indicator_idx] >= buy) and (cash_value[i-1] > 0) and (data.iloc[i,vix_index]>0):
-            #print('triggered buy')
+            buy_sell[i] = '1'
             stock_shares[i] = cash_value[i-1]/data.iloc[i,close_idx]
             stock_value[i] = stock_shares[i]*data.iloc[i,close_idx]
             cash_value[i] = 0
@@ -150,7 +151,7 @@ def backtesting(data,weights,start_balance,buy,sell):
             #print('stock: ',stock_value[i])
 
         elif (data.iloc[i,indicator_idx] == sell) and (stock_value[i-1] > 0):
-            #print('triggered sell')
+            buy_sell[i] = '-1'
             cash_value[i] = stock_shares[i-1] * data.iloc[i,close_idx] + cash_value[i-1]
             stock_shares[i] = 0
             stock_value[i] = stock_shares[i]*data.iloc[i,close_idx]
@@ -159,7 +160,7 @@ def backtesting(data,weights,start_balance,buy,sell):
             #print('cash: ',cash_value[i])
             #print('stock: ',stock_value[i])
         else:
-            #print('triggered hold')
+            buy_sell[i] = '0'
             stock_shares[i] = stock_shares[i-1]
             cash_value[i] = cash_value[i-1]
             stock_value[i] = stock_shares[i]*data.iloc[i,close_idx]
@@ -172,4 +173,5 @@ def backtesting(data,weights,start_balance,buy,sell):
     data['shares'] = stock_shares
     data['total_balance'] = total_value
     data['returns'] = returns
+    data['buy_sell'] = buy_sell
     return data['returns'].iloc[-1]
